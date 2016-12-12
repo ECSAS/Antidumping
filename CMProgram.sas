@@ -21,6 +21,7 @@
 /* Part 11: CM Level of Trade Adjustment                                   */
 /* Part 12: Delete All Work Files in the SAS Memory Buffer, If Desired     */
 /* Part 13: Calculate Run Time for This Program, If Desired                */
+/* Part 14: Review Log for Errors, Warnings, Uninitialized etc.            */    
 /***************************************************************************/
 
 /*---------------------------------------------------------------------*/
@@ -51,7 +52,7 @@
 /* NAME OF PROGRAMMER: <Case Analyst Name>                    */ /*(T)*/
 /*                                                            */
 /* PROGRAM NAME:       <Program Name>                         */ /*(T)*/
-/* PROGRAM LOCATION:   <C:\>                                  */ /*(T)*/
+/* PROGRAM LOCATION:   <E:\>                                  */ /*(T)*/
 /*------------------------------------------------------------*/
 
 /************************************************************************/
@@ -59,7 +60,17 @@
 /************************************************************************/
 
 /*------------------------------------------------------------------*/
-/* 1-A:     PROCEEDING TYPE                                         */
+/* WRITE LOG TO THE PROGRAM DIRECTORY                               */
+/*------------------------------------------------------------------*/
+
+%LET LOG = %SYSFUNC(SCAN(&_SASPROGRAMFILE., 1, '.'))%STR(.log); 
+FILENAME LOGFILE "&LOG.";
+
+PROC PRINTTO LOG=LOGFILE NEW;
+RUN;
+
+/*------------------------------------------------------------------*/
+/* 1-A:     PROCEEDING TYPE                               */
 /*------------------------------------------------------------------*/
 
 %LET CASE_TYPE = <AR/INV>;  /*(T) For an investigation, type 'INV' */
@@ -113,11 +124,15 @@
 /*                    Macro Program and its file name.               */
 /*-------------------------------------------------------------------*/
 
-LIBNAME COMPANY '<C:\....>';                 /* Location of company and  */
+LIBNAME COMPANY '<E:\....>';                 /* Location of company and  */
                                              /* exchange rate data sets. */
-FILENAME MACR   '<C:\...\MacrosProgram.SAS'; /* Location & name of AD-ME */
+FILENAME MACR   '<E:\...\MacrosProgram.SAS'; /* Location & name of AD-ME */
                                              /* All Macros Program.      */
 %INCLUDE MACR;                               /* Use the AD-ME All Macros */
+                                             /* Program.                 */
+FILENAME C_MACS  'E:\...\COMMON_MACROS.SAS';  /* Location & Name of the   */
+											 /* Common Macros Program    */
+%INCLUDE C_MACS;                             /* Use the Common Macros    */
                                              /* Program.                 */
 
 /*-------------------------------------------------------------------------*/
@@ -1024,7 +1039,6 @@ RUN;
          */
 
                 RUN;
-
                 %IF %UPCASE(&TIME_OUTSIDE_POR) NE NA %THEN
                 %DO;
                     DATA COSTOUTPOR;
@@ -1637,7 +1651,6 @@ RUN;
 /*     original CM sales, you need only activate the %NETPRICE macro  */
 /*     immediately below this note.                                   */
 /*--------------------------------------------------------------------*/
-
         <%NETPRICE>   /* Activate this line to duplicate the     */
                       /* calculations of the aggregate variables */
                       /* and net prices from Section 4-B.        */
@@ -1857,5 +1870,20 @@ RUN;
 /***************************************************************************/
 
 %G19_PROGRAM_RUNTIME
+
+/*ep*/
+
+/***************************************************************************/
+/* PART 14: REVIEW LOG FOR ERRORS, WARNINGS, UNINITIALIZED VARS ETC.       */
+/* LOG REVIEW PROCESS IS CUSTOMIZED FOR THE PROGRAM EXECUTED BASED ON      */
+/* <NME>    - NON-MARKET ECONOMY 										   */
+/* <MECOMP> - ME COMPARISON MARKET										   */
+/* <MEMARG> - ME MARGIN CALCULATION  									   */    
+/***************************************************************************/
+
+PROC PRINTTO LOG=LOG;
+RUN;
+
+%C_MAC2_READLOG (LOG=&LOG., ME_OR_NME = MECOMP);
 
 /*ep*/

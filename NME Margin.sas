@@ -1,5 +1,3 @@
-DM "CLEAR LOG; CLEAR OUTPUT"; RESETLINE;
-
 /*--------------------------------------------------------------*/
 /* REPLACE ANGLE BRACKETS: '<' AND '>' WITH CASE SPECIFIC CODE. */
 /*                                                              */
@@ -54,7 +52,7 @@ DM "CLEAR LOG; CLEAR OUTPUT"; RESETLINE;
 /* PART 18: IMPORTER-SPECIFIC DUTY ASSESSMENT RATES         */
 /*          (REVIEWS ONLY)                                  */
 /* PART 19: REPRINT THE FINAL CASH DEPOSIT RATE             */
-/*                                                          */
+/* Part 20: Review Log for Errors, Warnings, Uninit. etc.   */   
 /*----------------------------------------------------------*/
 
 /*----------------------------------------------*/
@@ -64,6 +62,17 @@ DM "CLEAR LOG; CLEAR OUTPUT"; RESETLINE;
 /* PROGRAM LOCATION:   < ex: H:\ >              */  /* (T) */
 /* DATE LAST UPDATED:  < ex: July 7, 1977 >     */  /* (T) */
 /*----------------------------------------------*/
+
+
+/*------------------------------------------------------------------*/
+/* WRITE LOG TO THE PROGRAM DIRECTORY                               */
+/*------------------------------------------------------------------*/
+%LET LOG = %SYSFUNC(SCAN(&_SASPROGRAMFILE., 1, '.'))%STR(.log); 
+FILENAME LOGFILE "&LOG.";
+
+PROC PRINTTO LOG=LOGFILE NEW;
+RUN;
+
 
 DATA _NULL_;
 	CALL SYMPUT('BDAY', UPCASE(STRIP(PUT(DATE(), DOWNAME.))));
@@ -93,6 +102,10 @@ RUN;
 
 LIBNAME COMPANY '<         >'; /*(T) */
 
+FILENAME C_MACS  'E:\..\COMMON_MACROS.SAS';  /* Location & Name of the   */
+											 /* Common Macros Program    */
+%INCLUDE C_MACS;                             /* Use the Common Macros    */
+                                             /* Program.                 */
 /*--------------------------------------------------------------*/
 /* TYPE IN THE NAMES OF THE U.S. AND FOP DATASETS. THIS PROGRAM */
 /* ASSUMES THAT BOTH SOURCES OF DATA ARE ALREADY STORED AS SAS  */
@@ -126,15 +139,18 @@ LIBNAME COMPANY '<         >'; /*(T) */
 
 %LET SV_PATH        = <       >; /* (T) WINDOWS EXPLORER LOCATION AND FILE    */
                                  /*     NAME (INCLUDING THE FILE EXTENSION).  */
-%LET SV_WORKSHEET   = <       >; /* (T) WORKSHEET TO CONVERT - OFTEN SHEET1   */
-%LET SV_NAME_RANGE  = <       >; /* (T) COLUMN RANGE IN WORKSHEET LISTING SV  */
-                                 /*     NAMES. USE THE CONVENTION R3:R42.     */
-                                 /*     THE BEGINNING OF THE RANGE IS OFTEN   */
-                                 /*     CELL R3.                              */
-%LET SV_VALUE_RANGE = <       >; /* (T) COLUMN RANGE IN WORKSHEET LISTING SV  */
-                                 /*     VALUES. USE THE CONVENTION T3:T42.    */
-                                 /*     THE BEGINNING OF THE RANGE IS OFTEN   */
-                                 /*     CELL T3.                              */
+%LET SV_NAME_RANGE  = <       >; /* (T) WORKSHEET NAME AND COLUMN RANGE       */
+								 /*		SEPARATED BY DOLLAR SIGN ($).         */
+								 /*		COLUMN RANGE REPRESENTS SURROGATE     */ 
+								 /*		VALUE VARIABLE NAMES. USE THE SYNTAX: */
+								 /*     NAMEOFTHESHEET$COLUMNRANGE.           */
+                                 /*     EXAMPLE: SummaryofSVs$06:034          */
+%LET SV_VALUE_RANGE = <       >; /* (T) WORKSHEET NAME AND COLUMN RANGE       */
+								 /*		SEPARATED BY DOLLAR SIGN ($).         */
+								 /*		COLUMN RANGE REPRESENTS SURROGATE     */ 
+								 /*		VALUE VARIABLE VALUES. USE THE SYNTAX:*/
+								 /*     NAMEOFTHESHEET$COLUMNRANGE.           */
+                                 /*     EXAMPLE: SummaryofSVs$P6:P34          */
 
 /*------------------------------------------------------------------*/
 /* DATE INFORMATION													*/
@@ -1015,7 +1031,6 @@ RUN;
 
 PROC IMPORT OUT = SV_VAR_NAMES
     DATAFILE = "&SV_PATH" DBMS = EXCEL REPLACE;
-    SHEET = "&SV_WORKSHEET";
     RANGE = "&SV_NAME_RANGE"; 
     GETNAMES = NO;
 RUN;
@@ -1026,7 +1041,6 @@ RUN;
 
 PROC IMPORT OUT = SV_VAR_VALUES
     DATAFILE = "&SV_PATH" DBMS = EXCEL REPLACE;
-    SHEET = "&SV_WORKSHEET";
     RANGE = "&SV_VALUE_RANGE"; 
     GETNAMES = NO;
 RUN;
@@ -2305,7 +2319,6 @@ RUN;
 			/*	using the Standard Method only if the Standard-		 	*/
 			/*	Method Cash Deposit rate is above de minimis.			*/
 			/*----------------------------------------------------------*/
-
 			%IF &ABOVE_DEMINIMIS_STND = YES %THEN
 			%DO;
 				%LET TITLE5 =;
@@ -3202,7 +3215,6 @@ RUN;
 /*-------------------------------------*/
 /* PART 17: MEANINGFUL DIFFERENCE TEST */
 /*-------------------------------------*/
-
 %MACRO MEANINGFUL_DIFF_TEST;
 
 	%IF &CALC_METHOD NE STANDARD %THEN
@@ -3753,3 +3765,19 @@ RUN;
 
 %PUT NOTE: THIS PROGRAM FINISHED RUNNING ON &EDAY, &EWDATE, AT &ETIME.;
 %PUT NOTE: THIS PROGRAM TOOK &TOTALTIME (HOURS:MINUTES) TO RUN.;
+
+
+/***************************************************************************/
+/* PART 20: REVIEW LOG FOR ERRORS, WARNINGS, UNINITIALIZED VARS ETC.       */
+/* LOG REVIEW PROCESS IS CUSTOMIZED FOR THE PROGRAM EXECUTED BASED ON      */
+/* <NME>    - NON-MARKET ECONOMY 										   */
+/* <MECOMP> - ME COMPARISON MARKET										   */
+/* <MEMARG> - ME MARGIN CALCULATION  									   */    
+/***************************************************************************/
+
+PROC PRINTTO LOG=LOG;
+RUN;
+
+%C_MAC2_READLOG (LOG=&LOG., ME_OR_NME = NME);
+
+/*ep*/
