@@ -25,7 +25,7 @@
 /*                                                          */
 /*              NME MARGIN CALCULATION PROGRAM              */
 /*                                                          */
-/*          GENERIC VERSION LAST UPDATED 10/13/2016         */
+/*          GENERIC VERSION LAST UPDATED 12/12/2016         */
 /*                                                          */
 /* PART 1:  IDENTIFY DATA, VARIABLES, AND PARAMETERS        */
 /* PART 2:  GET U.S., FOP, AND SV DATA                      */
@@ -52,7 +52,7 @@
 /* PART 18: IMPORTER-SPECIFIC DUTY ASSESSMENT RATES         */
 /*          (REVIEWS ONLY)                                  */
 /* PART 19: REPRINT THE FINAL CASH DEPOSIT RATE             */
-/* Part 20: Review Log for Errors, Warnings, Uninit. etc.   */   
+/* PART 20: REVIEW LOG FOR ERRORS, WARNINGS, UNINIT., ETC.  */   
 /*----------------------------------------------------------*/
 
 /*----------------------------------------------*/
@@ -63,16 +63,15 @@
 /* DATE LAST UPDATED:  < ex: July 7, 1977 >     */  /* (T) */
 /*----------------------------------------------*/
 
-
 /*------------------------------------------------------------------*/
 /* WRITE LOG TO THE PROGRAM DIRECTORY                               */
 /*------------------------------------------------------------------*/
+
 %LET LOG = %SYSFUNC(SCAN(&_SASPROGRAMFILE., 1, '.'))%STR(.log); 
 FILENAME LOGFILE "&LOG.";
 
-PROC PRINTTO LOG=LOGFILE NEW;
+PROC PRINTTO LOG = LOGFILE NEW;
 RUN;
-
 
 DATA _NULL_;
 	CALL SYMPUT('BDAY', UPCASE(STRIP(PUT(DATE(), DOWNAME.))));
@@ -93,19 +92,26 @@ RUN;
 %LET CASE_TYPE = <INV/AR>; 	/* (T) For an investigation, type 'INV' (without quotes) */
 						 	/* 	   For an administrative review, type 'AR' (without quotes) */
 
-/*-------------------------------------------------------*/
-/* LOCATION OF PERMANENT SAS DATASETS USED IN THIS CASE. */
-/*                                                       */
-/* EX. ON THE LAN:                                       */
-/*   I:\Grp3Off9\Product\Prelim\Company Folders\Company  */
-/*-------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
+/* LOCATION OF DATA AND MACROS PROGRAM                                 */
+/*                                                                     */
+/*     LIBNAME =      The name (i.e., COMPANY) and location of the     */
+/*                    sub-directory containing the SAS datasets for    */
+/*                    this program.                                    */
+/*                    EXAMPLE: E:\Operations\Fiji\AR_2016\Hangers\Acme */
+/*                                                                     */
+/*     FILENAME =     Full path of the Macro Program for this case,    */
+/*                    consisting of the sub-directory containing the   */
+/*                    Macro Program and its file name.                 */
+/*---------------------------------------------------------------------*/
 
-LIBNAME COMPANY '<         >'; /*(T) */
+LIBNAME COMPANY '<E:\....>';                   /* (T) Location of company and  */
+                                               /* exchange rate data sets.     */
+FILENAME C_MACS '<E:\...\COMMON_MACROS.SAS>';  /* (T) Location & Name of the   */
+											   /* Common Macros Program        */
+%INCLUDE C_MACS;                               /* Use the Common Macros        */
+                                               /* Program.                     */
 
-FILENAME C_MACS  'E:\..\COMMON_MACROS.SAS';  /* Location & Name of the   */
-											 /* Common Macros Program    */
-%INCLUDE C_MACS;                             /* Use the Common Macros    */
-                                             /* Program.                 */
 /*--------------------------------------------------------------*/
 /* TYPE IN THE NAMES OF THE U.S. AND FOP DATASETS. THIS PROGRAM */
 /* ASSUMES THAT BOTH SOURCES OF DATA ARE ALREADY STORED AS SAS  */
@@ -3766,7 +3772,6 @@ RUN;
 %PUT NOTE: THIS PROGRAM FINISHED RUNNING ON &EDAY, &EWDATE, AT &ETIME.;
 %PUT NOTE: THIS PROGRAM TOOK &TOTALTIME (HOURS:MINUTES) TO RUN.;
 
-
 /***************************************************************************/
 /* PART 20: REVIEW LOG FOR ERRORS, WARNINGS, UNINITIALIZED VARS ETC.       */
 /* LOG REVIEW PROCESS IS CUSTOMIZED FOR THE PROGRAM EXECUTED BASED ON      */
@@ -3775,9 +3780,9 @@ RUN;
 /* <MEMARG> - ME MARGIN CALCULATION  									   */    
 /***************************************************************************/
 
-PROC PRINTTO LOG=LOG;
+PROC PRINTTO LOG = LOG;
 RUN;
 
-%C_MAC2_READLOG (LOG=&LOG., ME_OR_NME = NME);
+%C_MAC2_READLOG (LOG = &LOG., ME_OR_NME = NME);
 
 /*ep*/

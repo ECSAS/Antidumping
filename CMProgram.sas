@@ -2,7 +2,7 @@
 /*                        ANTIDUMPING MARKET-ECONOMY                       */
 /*                    ANALYSIS OF COMPARISON-MARKET SALES                  */
 /*                                                                         */
-/*                  LAST PROGRAM UPDATED SEPTEMBER 15, 2016                */
+/*                  LAST PROGRAM UPDATED DECEMBER 12, 2016                 */
 /*                                                                         */
 /* Part 1:  Database and General Program Information                       */
 /* Part 2:  Bring In Comparison Market Sales, Convert Date Variable, If    */
@@ -66,11 +66,11 @@
 %LET LOG = %SYSFUNC(SCAN(&_SASPROGRAMFILE., 1, '.'))%STR(.log); 
 FILENAME LOGFILE "&LOG.";
 
-PROC PRINTTO LOG=LOGFILE NEW;
+PROC PRINTTO LOG = LOGFILE NEW;
 RUN;
 
 /*------------------------------------------------------------------*/
-/* 1-A:     PROCEEDING TYPE                               */
+/* 1-A:     PROCEEDING TYPE                                         */
 /*------------------------------------------------------------------*/
 
 %LET CASE_TYPE = <AR/INV>;  /*(T) For an investigation, type 'INV' */
@@ -112,28 +112,29 @@ RUN;
                               /*    be captured for comparison to          */
                               /*    U.S. sales.                            */
 
-/*-------------------------------------------------------------------*/
-/* 1-C: LOCATION OF DATA AND MACROS PROGRAM                          */
-/*                                                                   */
-/*     LIBNAME =      The name (i.e., COMPANY) and location of the   */
-/*                 sub-directory containing the SAS datasets for     */
-/*                    this program.                                  */
-/*                                                                   */
-/*     %INCLUDE =     Full path of the Macro Program for this case,  */
-/*                    consisting of the sub-directory containing the */
-/*                    Macro Program and its file name.               */
-/*-------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
+/* 1-C: LOCATION OF DATA AND MACROS PROGRAM                            */
+/*                                                                     */
+/*     LIBNAME =      The name (i.e., COMPANY) and location of the     */
+/*                    sub-directory containing the SAS datasets for    */
+/*                    this program.                                    */
+/*                    EXAMPLE: E:\Operations\Fiji\AR_2016\Hangers\Acme */
+/*                                                                     */
+/*     FILENAME =     Full path of the Macro Program for this case,    */
+/*                    consisting of the sub-directory containing the   */
+/*                    Macro Program and its file name.                 */
+/*---------------------------------------------------------------------*/
 
-LIBNAME COMPANY '<E:\....>';                 /* Location of company and  */
-                                             /* exchange rate data sets. */
-FILENAME MACR   '<E:\...\MacrosProgram.SAS'; /* Location & name of AD-ME */
-                                             /* All Macros Program.      */
-%INCLUDE MACR;                               /* Use the AD-ME All Macros */
-                                             /* Program.                 */
-FILENAME C_MACS  'E:\...\COMMON_MACROS.SAS';  /* Location & Name of the   */
-											 /* Common Macros Program    */
-%INCLUDE C_MACS;                             /* Use the Common Macros    */
-                                             /* Program.                 */
+LIBNAME COMPANY '<E:\....>';                   /* (T) Location of company and  */
+                                               /* exchange rate data sets.     */
+FILENAME MACR   '<E:\...\MacrosProgram.SAS>';  /* (T) Location & name of AD-ME */
+                                               /* All Macros Program.          */
+%INCLUDE MACR;                                 /* Use the AD-ME All Macros     */
+                                               /* Program.                     */
+FILENAME C_MACS '<E:\...\COMMON_MACROS.SAS>';  /* (T) Location & Name of the   */
+											   /* Common Macros Program        */
+%INCLUDE C_MACS;                               /* Use the Common Macros        */
+                                               /* Program.                     */
 
 /*-------------------------------------------------------------------------*/
 /* 1-D: TITLES, FOOTNOTES AND AUTOMATIC NAMES FOR OUTPUT DATASETS          */
@@ -1881,9 +1882,9 @@ RUN;
 /* <MEMARG> - ME MARGIN CALCULATION  									   */    
 /***************************************************************************/
 
-PROC PRINTTO LOG=LOG;
+PROC PRINTTO LOG = LOG;
 RUN;
 
-%C_MAC2_READLOG (LOG=&LOG., ME_OR_NME = MECOMP);
+%C_MAC2_READLOG (LOG = &LOG., ME_OR_NME = MECOMP);
 
 /*ep*/

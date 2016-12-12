@@ -2,7 +2,7 @@
 /*                         COMMON UTILITY MACROS PROGRAM                   */
 /*                         FOR USE FOR BOTH ME AND NME                     */
 /*                                                                         */
-/*                    LAST PROGRAM UPDATE DECEMBER 8, 2016                 */
+/*                    LAST PROGRAM UPDATE DECEMBER 12, 2016                */
 /*                                                                         */
 /* PART 1:  MACRO TO GET COUNTS OF THE DATASETS                            */ 
 /* PART 2:  REVIEW AND REPORT GENERAL SAS LOG ALERTS SUCH AS ERRORS,       */
@@ -32,7 +32,7 @@
 /* 	(B) PROGRAM SPECIFIC ALERTS THAT WE NEED TO LOOK OUT FOR.           */
 /*----------------------------------------------------------------------*/
 
-%MACRO C_MAC2_READLOG (LOG= , ME_OR_NME =);
+%MACRO C_MAC2_READLOG (LOG = , ME_OR_NME =);
 
 /*----------------------------------------------------------------------*/ 
 /*  PRINT FULL LOG TO THE SAS ENTERPRISE WINDOW                         */
@@ -114,8 +114,7 @@
    		%CMAC1_COUNTER (DATASET = NEGDATA_CM, MVAR=NEGDATA_CM);
    		%CMAC1_COUNTER (DATASET = OUTDATES_CM, MVAR=OUTDATES_CM);
    		%CMAC1_COUNTER (DATASET = NOCOST, MVAR=NOCOST);
-   		%CMAC1_COUNTER (DATASET = FAIL, MVAR=FAIL);
-   		%CMAC1_COUNTER (DATASET = NOCOMP, MVAR=NOCOMP);
+	    %CMAC1_COUNTER (DATASET = HMAFFOUT, MVAR=HMAFFOUT);		
    		%CMAC1_COUNTER (DATASET = NEGDATA_DS, MVAR=NEGDATA_DS);
    		%CMAC1_COUNTER (DATASET = OUTDATES_DS, MVAR=OUTDATES_DS);
 
@@ -126,10 +125,8 @@
    		%CMAC1_COUNTER (DATASET = NEGDATA_US, MVAR=NEGDATA_US);
    		%CMAC1_COUNTER (DATASET = OUTDATES_US, MVAR=OUTDATES_US);
    		%CMAC1_COUNTER (DATASET = NOCOST, MVAR=NOCOST);
-   		%CMAC1_COUNTER (DATASET = NOFMGDATA, MVAR=NOFMGDATA);
    		%CMAC1_COUNTER (DATASET = NORATES, MVAR=NORATES);
    		%CMAC1_COUNTER (DATASET = NO_DP_REGION_TEST, MVAR=NO_DP_REGION_TEST);
-   		%CMAC1_COUNTER (DATASET = NO_BASE_GROUP, MVAR=NO_BASE_GROUP);
 		%CMAC1_COUNTER (DATASET = NO_DP_PURCHASER_TEST, MVAR=NO_DP_PURCHASER_TEST);
    		%CMAC1_COUNTER (DATASET = NO_DP_PERIOD_TEST, MVAR=NO_DP_PERIOD_TEST);
 	
@@ -140,7 +137,6 @@
    		%CMAC1_COUNTER (DATASET = NEGDATA, MVAR=NEGDATA);
    		%CMAC1_COUNTER (DATASET = OUTDATES, MVAR=OUTDATES);
    		%CMAC1_COUNTER (DATASET = NOFOP, MVAR=NOFOP);
-   		%CMAC1_COUNTER (DATASET = FAIL, MVAR=FAIL);
    		%CMAC1_COUNTER (DATASET = NOEXRATE, MVAR=NOEXRATE);
    		%CMAC1_COUNTER (DATASET = NEGATIVE_NVALUES, MVAR=NEGATIVE_NVALUES);
    		%CMAC1_COUNTER (DATASET = NEGATIVE_USPRICES, MVAR=NEGATIVE_USPRICES);
@@ -155,10 +151,13 @@
 /* 	ALERTS SUMMARY TO THE JOB LOG                                       */
 /*----------------------------------------------------------------------*/
 
-		%PUT ****************************************************;
-		%PUT ****************************************************;
-		%PUT GENERAL SAS ALERTS:                                 ;
-		%PUT ****************************************************;
+		%PUT ******************************************************************************;
+		%PUT ******************************************************************************;
+		%PUT * GENERAL SAS ALERTS:                                                        *;
+		%PUT ******************************************************************************;
+		%PUT *   NORMALLY, BELOW ALERTS SHOULD BE ZERO                                    *;
+	    %PUT *   IF THEY DO NOT HAVE ZERO INSTANCES DETERMINE IF THERE IS AN ISSUE.       *;
+		%PUT ******************************************************************************;
 		%PUT # OF ERRORS                       = &ERROR;
 		%PUT # OF WARNINGS                     = &WARNING;
 		%PUT # OF UNINITIALIZED VARIABLES      = &UNINIT;
@@ -166,58 +165,55 @@
 		%PUT # OF CONVERTED VARIABLES          = &CONVERTED;
 		%PUT # OF MISSING VALUES               = &MISSING;
 		%PUT # OF LICENSE WARNINGS             = &LICENSE;
-		%PUT ****************************************************;
-		%PUT PROGRAM SPECIFIC (&ME_OR_NME.) ALERTS TO VERIFY:    ;
-		%PUT ****************************************************;
-		%PUT NORMALLY, COUNTS FOR THE BELOW LISTED DATATSETS HAVE;
-		%PUT ZERO OBSERVATIONS. IF THEY DO NOT HAVE ZERO RECORDS ;
-	    %PUT DETERMINE IF THERE IS AN ISSUE.                     ;
-		%PUT ****************************************************;
+		%PUT ******************************************************************************;
+		%PUT ;
+		%PUT ******************************************************************************;
+		%PUT * PROGRAM SPECIFIC ALERTS TO VERIFY:                                         *;
+		%PUT ******************************************************************************;
+		%PUT *   NORMALLY, COUNTS FOR THE BELOW LISTED DATATSETS HAVE ZERO OBSERVATIONS.  *;
+	    %PUT *   IF THEY DO NOT HAVE ZERO RECORDS DETERMINE IF THERE IS AN ISSUE.         *;
+		%PUT ******************************************************************************;
 
 	%IF %UPCASE("&ME_OR_NME.") = "MECOMP" %THEN %DO;
 
-		%PUT # OF NEGDATA_CM RECORDS           = %CMPRES(&COUNT_NEGDATA_CM);
-		%PUT # OF OUTDATES_CM RECORDS          = %CMPRES(&COUNT_OUTDATES_CM);
-		%PUT # OF FAIL DATA RECORDS            = %CMPRES(&COUNT_FAIL);
-		%PUT # OF NOCOST RECORDS               = %CMPRES(&COUNT_NOCOST);
-		%PUT # OF NOCOMP RECORDS               = %CMPRES(&COUNT_NOCOMP);
-		%PUT # OF NEGDATA_DS RECORDS           = %CMPRES(&COUNT_NEGDATA_DS);
-		%PUT # OF OUTDATES_DS RECORDS          = %CMPRES(&COUNT_OUTDATES_DS);
-		%PUT ******************************************************;
-		%PUT ******************************************************;
+		%PUT # OF HM SALES WITH PRICES AND/OR QTY <=0 (NEGDATA_CM)               = %CMPRES(&COUNT_NEGDATA_CM);
+		%PUT # OF HM SALES OUTSIDE DATE RANGE (OUTDATES_CM)                      = %CMPRES(&COUNT_OUTDATES_CM);
+		%PUT # OF HM SALES FAILING ARMS LENGTH TEST (HMAFFOUT)                   = %CMPRES(&COUNT_HMAFFOUT);
+		%PUT # OF HM SALES WITH NO COST DATA (NOCOST)                            = %CMPRES(&COUNT_NOCOST);
+		%PUT # OF DOWNSTREAM SALES WITH PRICES AND/OR QTY <=0 (NEGDATA_DS)       = %CMPRES(&COUNT_NEGDATA_DS);
+		%PUT # OF DOWNSTREAM SALES OUTSIDE DATE RANGE (OUTDATES_DS)              = %CMPRES(&COUNT_OUTDATES_DS);
+		%PUT ******************************************************************************;
+		%PUT ******************************************************************************;
 
 	%END;
 
 	%ELSE %IF %UPCASE("&ME_OR_NME.") = "MEMARG" %THEN %DO;
 
-		%PUT # OF NEGDATA_US RECORDS           = %CMPRES(&COUNT_NEGDATA_US);
-		%PUT # OF OUTDATES_US RECORDS          = %CMPRES(&COUNT_OUTDATES_US);
-		%PUT # OF NOCOST RECORDS               = %CMPRES(&COUNT_NOCOST);
-		%PUT # OF NOFMGDATA RECORDS            = %CMPRES(&COUNT_NOFMGDATA);
-		%PUT # OF NORATES RECORDS              = %CMPRES(&COUNT_NORATES);
-		%PUT # OF NO_DP_REGION_TEST RECORDS    = %CMPRES(&COUNT_NO_DP_REGION_TEST);
-		%PUT # OF NO_BASE_GROUP RECORDS        = %CMPRES(&COUNT_NO_BASE_GROUP);
-		%PUT # OF NO_DP_PURCHASER_TEST RECORDS = %CMPRES(&COUNT_NO_DP_PURCHASER_TEST);
-		%PUT # OF NO_DP_PERIOD_TEST RECORDS    = %CMPRES(&COUNT_NO_DP_PERIOD_TEST);
-		%PUT ******************************************************;
-		%PUT ******************************************************;
+		%PUT # OF US SALES WITH PRICES AND/OR QTY <=0 (NEGDATA_US)              = %CMPRES(&COUNT_NEGDATA_US);
+		%PUT # OF US SALES OUTSIDE DATE RANGE (OUTDATES_US)                     = %CMPRES(&COUNT_OUTDATES_US);
+		%PUT # OF US SALES WITH NO COST DATA (NOCOST)                           = %CMPRES(&COUNT_NOCOST);
+		%PUT # OF US SALES WITH NO EXCHANGE RATES (NORATES)                     = %CMPRES(&COUNT_NORATES);
+		%PUT # OF US SALES WITH INVALID REGIONAL VALUES (NO_DP_REGION_TEST)     = %CMPRES(&COUNT_NO_DP_REGION_TEST);
+		%PUT # OF US SALES WITH INVALID PURCHASER VALUES (NO_DP_PURCHASER_TEST) = %CMPRES(&COUNT_NO_DP_PURCHASER_TEST);
+		%PUT # OF US SALES WITH INVALID TIME VALUES (NO_DP_PERIOD_TEST)         = %CMPRES(&COUNT_NO_DP_PERIOD_TEST);
+		%PUT *******************************************************************************;
+		%PUT *******************************************************************************;
 
 	%END;
 
 	%ELSE %IF %UPCASE("&ME_OR_NME.") = "NME" %THEN %DO;
 
-		%PUT # OF NEGDATA RECORDS             = %CMPRES(&COUNT_NEGDATA);
-		%PUT # OF OUTDATES RECORDS            = %CMPRES(&COUNT_OUTDATES);
-		%PUT # OF FAIL DATA RECORDS           = %CMPRES(&COUNT_FAIL);
-		%PUT # OF NOFOP RECORDS               = %CMPRES(&COUNT_NOFOP);
-		%PUT # OF NOEXRATE RECORDS            = %CMPRES(&COUNT_NOEXRATE);
-		%PUT # OF NEGATIVE_NVALUES RECORDS    = %CMPRES(&COUNT_NEGATIVE_NVALUES);
-		%PUT # OF NEGATIVE_USPRICES RECORDS   = %CMPRES(&COUNT_NEGATIVE_USPRICES);
-		%PUT # OF NO_DP_REGION_TEST RECORDS   = %CMPRES(&COUNT_NO_DP_REGION_TEST);
-		%PUT # OF NO_DP_PERIOD_TEST RECORDS   = %CMPRES(&COUNT_NO_DP_PERIOD_TEST);
-		%PUT # OF NO_DP_PURCHASER RECORDS     = %CMPRES(&COUNT_NO_DP_PURCHASER_TEST);
-		%PUT ******************************************************;
-		%PUT ******************************************************;
+		%PUT # OF US SALES WITH PRICES AND/OR QTY <=0 (NEGDATA)                 = %CMPRES(&COUNT_NEGDATA);
+		%PUT # OF US SALES OUTSIDE DATE RANGE (OUTDATES)                        = %CMPRES(&COUNT_OUTDATES);
+		%PUT # OF US SALES WITH NO MATCHING FACTORS OF PRODUCTION (NOFOP)       = %CMPRES(&COUNT_NOFOP);
+		%PUT # OF US SALES WITH NO EXCHANGE RATES (NOEXRATE)                    = %CMPRES(&COUNT_NOEXRATE);
+		%PUT # OF US SALES WITH NEGATIVE NORMAL VALUES (NEGATIVE_NVALUES)       = %CMPRES(&COUNT_NEGATIVE_NVALUES);
+		%PUT # OF US SALES WITH NEGATIVE NET US PRICES (NEGATIVE_USPRICES)      = %CMPRES(&COUNT_NEGATIVE_USPRICES);
+	    %PUT # OF US SALES WITH INVALID REGIONAL VALUES (NO_DP_REGION_TEST)     = %CMPRES(&COUNT_NO_DP_REGION_TEST);
+		%PUT # OF US SALES WITH INVALID PURCHASER VALUES (NO_DP_PURCHASER_TEST) = %CMPRES(&COUNT_NO_DP_PURCHASER_TEST);
+		%PUT # OF US SALES WITH INVALID TIME VALUES (NO_DP_PERIOD_TEST)         = %CMPRES(&COUNT_NO_DP_PERIOD_TEST);
+		%PUT *******************************************************************************;
+		%PUT *******************************************************************************;
 
 	%END;
 	
